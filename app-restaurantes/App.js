@@ -2,7 +2,9 @@
 import {NavigationContainer} from '@react-navigation/native';
 import {Button, Text, TextInput, View, FlatList} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {useState} from 'react';
+import {useState, useContext} from 'react';
+//import MapView, {Marker} from 'react-native-maps';
+import {Contexto} from './contexto';
 
 const {Screen, Navigator} = createBottomTabNavigator();
 
@@ -15,6 +17,11 @@ const Formulario = () => {
   const [classificacao, setClassificacao] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
+  const [descricao, setDescricao] = useState("");
+
+
+  const contexto = useContext(Contexto);
+
 
 
 
@@ -30,6 +37,7 @@ const Formulario = () => {
         <TextInput placeholder='Classificação' value={classificacao} onChangeText={setClassificacao}/>
         <TextInput placeholder='Latitude' value={latitude} onChangeText={setLatitude}/>
         <TextInput placeholder='Longitude' value={longitude} onChangeText={setLongitude}/>
+        <TextInput placeholder='Descrição' value={descricao} onChangeText={setDescricao}/>
         </View>
 
         <Button title='Salvar' onPress={() =>{
@@ -59,7 +67,7 @@ const Item = (props) => {
 }
 
 
-const Listar = (props) => {
+const Listar = (props) => { //aqui aula 10 MIN: 09:09
   return (
     <View style={{flex: 1}}>
       <Text>Listagem</Text>
@@ -68,10 +76,31 @@ const Listar = (props) => {
   )
 }
 
-const Mapa = () => {
+const Mapa = (props) => {
   return (
     <View style={{flex: 1}}>
       <Text>Mapa</Text>
+
+      <MapView style={{flex: 1}}
+      initialRegion={{
+        latitude: -23.542845,
+        longitude: -46.638829,
+        latitudeDelta: 0.0441,
+        longitudeDelta: 0.0041
+      }}>
+
+        {props.lista.map((item, indice) => {
+          return(
+            <Marker coordinate={{
+              latitude: parseFloat(item.latitude),
+              longitude: parseFloat(item.longitude)}}
+              title={item.nome}
+              description={item.tipo}/>
+          )
+        })}
+
+      </MapView>
+
     </View>
   )
 }
@@ -83,12 +112,9 @@ const Principal = (props) => {
     <View style={{flex: 1}}>
       <NavigationContainer>
         <Navigator>
-          <Screen name="Formulário">
-            {(navProps) => 
-            <Formulario {...navProps}
-            onSalvar={props.onSalvar}/> 
-            }
-          </Screen>
+
+          <Screen name="Formulário" component={Formulario}/>
+        
 
           <Screen name="Listar">
             {(navProps)=>
@@ -96,7 +122,12 @@ const Principal = (props) => {
             }
           </Screen>
 
-          <Screen name="Mapa" component={Mapa}/>
+          <Screen name="Mapa">
+            {(navProps)=>
+            <Mapa {...navProps} lista={props.lista}/>
+            }
+          </Screen>
+
         </Navigator>
       </NavigationContainer>
     </View>
@@ -115,9 +146,15 @@ export default function App() {
 
 
   return (
+    <Contexto.Provider value={{
+      lista,
+      salvar,
+    }}
+    >
     <View style={{flex: 1}}>
       <Text>000000000000000000</Text>
       <Principal onSalvar={salvar} lista={lista}/>
     </View>
+    </Contexto.Provider>
   );
 }
